@@ -1,0 +1,226 @@
+/* ===================================
+   CALENDARIO ESTILO IPHONE/IOS
+   =================================== */
+
+.custom-daypicker {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif !important;
+}
+
+.custom-daypicker .rdp {
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.custom-daypicker .rdp-months {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.custom-daypicker .rdp-month {
+  margin: 0 !important;
+  padding: 20px !important;
+  width: 100% !important;
+}
+
+.custom-daypicker .rdp-caption {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  position: relative !important;
+  margin-bottom: 16px !important;
+}
+
+.custom-daypicker .rdp-caption_label {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+
+.custom-daypicker .rdp-nav {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+}
+
+.custom-daypicker .rdp-nav_button {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.custom-daypicker .rdp-nav_button:hover {
+  background-color: #f3f4f6 !important;
+}
+
+.custom-daypicker .rdp-nav_button:active {
+  transform: scale(0.95) !important;
+  background-color: #e5e7eb !important;
+}
+
+.custom-daypicker .rdp-table {
+  width: 100% !important;
+  max-width: 350px !important;
+  margin: 8px auto 0 !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  table-layout: fixed !important;
+}
+
+.custom-daypicker .rdp-head {
+  display: table-header-group !important;
+}
+
+.custom-daypicker .rdp-head_row {
+  display: table-row !important;
+}
+
+.custom-daypicker .rdp-head_cell {
+  display: table-cell !important;
+  width: 14.28% !important;
+  height: 44px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #9ca3af !important;
+  text-transform: uppercase !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 0 !important;
+}
+
+.custom-daypicker .rdp-tbody {
+  display: table-row-group !important;
+}
+
+.custom-daypicker .rdp-row {
+  display: table-row !important;
+}
+
+.custom-daypicker .rdp-cell {
+  display: table-cell !important;
+  width: 14.28% !important;
+  height: 44px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  padding: 2px !important;
+}
+
+.custom-daypicker .rdp-day {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  margin: 0 auto !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  color: #111827 !important;
+  transition: all 0.15s !important;
+}
+
+.custom-daypicker .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
+  background-color: #f3f4f6 !important;
+}
+
+.custom-daypicker .rdp-day:active:not(.rdp-day_disabled) {
+  transform: scale(0.9) !important;
+}
+
+.custom-daypicker .rdp-day_selected {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+.custom-daypicker .rdp-day_selected:hover {
+  background-color: #2563eb !important;
+}
+
+.custom-daypicker .rdp-day_today:not(.rdp-day_selected) {
+  background-color: #f3f4f6 !important;
+  font-weight: 600 !important;
+  box-shadow: inset 0 0 0 2px #3b82f6 !important;
+}
+
+.custom-daypicker .rdp-day_outside {
+  color: #d1d5db !important;
+  opacity: 0.4 !important;
+}
+
+.custom-daypicker .rdp-day_outside:hover {
+  background-color: transparent !important;
+}
+
+.custom-daypicker .rdp-day_disabled {
+  color: #e5e7eb !important;
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+}
+
+.custom-daypicker .rdp-day_disabled:hover {
+  background-color: transparent !important;
+}
+
+/* ===================================
+   ANIMACIONES PARA NOTIFICACIONES
+   =================================== */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoom-in {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.animate-in {
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+.zoom-in {
+  animation-name: zoom-in;
+}
+
+/* Indicador de conexión pulsante */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
