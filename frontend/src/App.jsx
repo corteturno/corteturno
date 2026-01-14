@@ -80,15 +80,13 @@ const BarberShopSaaS = () => {
     const savedDate = localStorage.getItem('barberos_selectedDate');
     const savedTimestamp = localStorage.getItem('barberos_selectedDate_timestamp');
     
-    // Si no hay fecha guardada o han pasado más de 2 horas, usar fecha actual en México
-    if (!savedDate || !savedTimestamp || (Date.now() - parseInt(savedTimestamp)) > 2 * 60 * 60 * 1000) {
-      const mexicoTime = new Date(new Date().getTime() + (-6 * 60 * 60 * 1000)); // UTC-6 for Mexico
-      return mexicoTime.getFullYear() + '-' + 
-             String(mexicoTime.getMonth() + 1).padStart(2, '0') + '-' + 
-             String(mexicoTime.getDate()).padStart(2, '0');
+    // Si hay fecha guardada y no han pasado más de 2 horas, usarla
+    if (savedDate && savedTimestamp && (Date.now() - parseInt(savedTimestamp)) <= 2 * 60 * 60 * 1000) {
+      return savedDate;
     }
     
-    return savedDate;
+    // Si no, usar fecha actual del navegador (más compatible)
+    return new Date().toISOString().split('T')[0];
   });
   const [showModal, setShowModal] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
