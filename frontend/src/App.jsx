@@ -3261,7 +3261,7 @@ const BarberShopSaaS = () => {
                             <div className="flex flex-col items-center justify-center bg-gray-50 rounded-2xl w-14 h-14 border border-gray-100">
                               <span className="text-[15px] font-black text-black leading-none">{appt.appointment_time.substring(0, 5)}</span>
                               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                                {new Date(appt.appointment_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).replace(' ', '-').toUpperCase()}
+                                {format(new Date(appt.appointment_date.split('T')[0] + 'T12:00:00'), 'dd-MMM', { locale: es }).toUpperCase()}
                               </span>
                             </div>
                             
