@@ -318,16 +318,16 @@ const BarberShopSaaS = () => {
         }
       });
       
-      // Test connection after 2 seconds (solo en desarrollo)
-      if (process.env.NODE_ENV === 'development') {
-        setTimeout(() => {
-          console.log('🧪 Testing Socket.IO connection...');
-          socket.emit('test-notification', {
-            tenantId: currentUser.tenant_id,
-            branchId: selectedBranch
-          });
-        }, 2000);
-      }
+      // Test connection after 2 seconds (deshabilitado en producción)
+      // if (process.env.NODE_ENV === 'development') {
+      //   setTimeout(() => {
+      //     console.log('🧪 Testing Socket.IO connection...');
+      //     socket.emit('test-notification', {
+      //       tenantId: currentUser.tenant_id,
+      //       branchId: selectedBranch
+      //     });
+      //   }, 2000);
+      // }
       
       return () => {
         console.log('🔌 Disconnecting socket');
@@ -3016,104 +3016,6 @@ const BarberShopSaaS = () => {
             <div className="mb-6 px-1">
               <h2 className="text-[32px] font-black text-black tracking-tight leading-tight">Métricas</h2>
               <p className="text-gray-400 text-[16px] font-medium">Resumen de tu actividad para hoy.</p>
-              
-              {/* Botones de prueba sin Socket.IO */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="mt-2 flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => {
-                      console.log('=== DEBUG INFO ===');
-                      console.log('Selected branch:', selectedBranch);
-                      console.log('Selected date:', selectedDate);
-                      console.log('All appointments:', appointments);
-                      console.log('Today appointments:', todayAppointments);
-                      console.log('Current metrics:', currentMetrics);
-                    }}
-                    className="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs font-medium"
-                  >
-                    🔍 Debug Info
-                  </button>
-                  
-                  <button
-                    onClick={async () => {
-                      try {
-                        console.log('Force loading appointments for branch:', selectedBranch);
-                        const appointmentsData = await API.call(`/appointments?branch=${selectedBranch}`);
-                        console.log('Force loaded appointments:', appointmentsData);
-                        setAppointments(appointmentsData || []);
-                      } catch (err) {
-                        console.error('Error force loading:', err);
-                      }
-                    }}
-                    className="bg-green-500 text-white px-3 py-1 rounded-lg text-xs font-medium"
-                  >
-                    🔄 Force Load
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      // Test notification
-                      const testNotification = {
-                        type: 'public_booking',
-                        branchId: selectedBranch,
-                        data: {
-                          clientName: 'Cliente Prueba',
-                          clientPhone: '+52 123 456 7890',
-                          serviceName: 'Corte Clásico',
-                          chairNumber: '1',
-                          branchName: 'Sucursal Principal',
-                          date: selectedDate,
-                          time: '14:30'
-                        }
-                      };
-                      setNotificationData(testNotification.data);
-                      setShowNotificationModal(true);
-                      showPushNotification(testNotification);
-                    }}
-                    className="bg-purple-500 text-white px-3 py-1 rounded-lg text-xs font-medium"
-                  >
-                    🔔 Test Modal
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      // Test Socket.IO connection
-                      console.log('🧪 Manual Socket.IO test');
-                      if (window.testSocket) {
-                        window.testSocket.emit('test-notification', {
-                          tenantId: currentUser.tenant_id,
-                          branchId: selectedBranch
-                        });
-                      } else {
-                        console.log('❌ No test socket available');
-                      }
-                    }}
-                    className="bg-indigo-500 text-white px-3 py-1 rounded-lg text-xs font-medium"
-                  >
-                    🔌 Test Socket
-                  </button>
-                  
-                  <button
-                    onClick={async () => {
-                      try {
-                        console.log('Creating test data...');
-                        const result = await API.call('/test-data', { method: 'POST' });
-                        console.log('Test data result:', result);
-                        alert('Datos de prueba creados: ' + result.message);
-                        // Recargar datos
-                        await loadUserData();
-                        await loadBranchData();
-                      } catch (err) {
-                        console.error('Error creating test data:', err);
-                        alert('Error: ' + err.message);
-                      }
-                    }}
-                    className="bg-orange-500 text-white px-3 py-1 rounded-lg text-xs font-medium"
-                  >
-                    🧪 Test Data
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* TARJETA HERO: CITAS TOTALES (ESTILO ELITE) */}
