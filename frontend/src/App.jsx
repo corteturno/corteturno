@@ -80,9 +80,12 @@ const BarberShopSaaS = () => {
     const savedDate = localStorage.getItem('barberos_selectedDate');
     const savedTimestamp = localStorage.getItem('barberos_selectedDate_timestamp');
     
-    // Si no hay fecha guardada o han pasado más de 2 horas, usar fecha actual
+    // Si no hay fecha guardada o han pasado más de 2 horas, usar fecha actual en México
     if (!savedDate || !savedTimestamp || (Date.now() - parseInt(savedTimestamp)) > 2 * 60 * 60 * 1000) {
-      return new Date().toISOString().split('T')[0];
+      const mexicoTime = new Date(new Date().getTime() + (-6 * 60 * 60 * 1000)); // UTC-6 for Mexico
+      return mexicoTime.getFullYear() + '-' + 
+             String(mexicoTime.getMonth() + 1).padStart(2, '0') + '-' + 
+             String(mexicoTime.getDate()).padStart(2, '0');
     }
     
     return savedDate;
@@ -1442,6 +1445,7 @@ const BarberShopSaaS = () => {
   const selectedBranchData = branches.find(b => b.id === selectedBranch);
   
   const todayAppointments = selectedBranch ? appointments.filter(a => {
+    // Usar T12:00:00 para evitar problemas de zona horaria
     const appointmentDate = a.appointment_date.split('T')[0];
     const branchMatches = String(a.branch_id) === String(selectedBranch);
     const dateMatches = appointmentDate === selectedDate;
@@ -1532,14 +1536,16 @@ const BarberShopSaaS = () => {
       };
     }
     
-    // Usar la fecha seleccionada como referencia en lugar de la fecha actual
-    const referenceDate = new Date(selectedDate + 'T00:00:00');
+    // Usar la fecha seleccionada como referencia en lugar de la fecha actual (con zona horaria México)
+    const referenceDate = new Date(selectedDate + 'T12:00:00'); // Usar mediodía para evitar problemas de zona horaria
     const todayStr = selectedDate;
     
     // Calcular fechas basadas en la fecha seleccionada
     const yesterday = new Date(referenceDate);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const yesterdayStr = yesterday.getFullYear() + '-' + 
+                        String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(yesterday.getDate()).padStart(2, '0');
     
     const weekStart = new Date(referenceDate);
     weekStart.setDate(referenceDate.getDate() - referenceDate.getDay());
@@ -1580,12 +1586,12 @@ const BarberShopSaaS = () => {
     });
     
     const weekAppts = branchAppointments.filter(a => {
-      const apptDate = new Date(a.appointment_date);
+      const apptDate = new Date(a.appointment_date.split('T')[0] + 'T12:00:00'); // Usar mediodía
       return apptDate >= weekStart && apptDate <= referenceDate;
     });
     
     const monthAppts = branchAppointments.filter(a => {
-      const apptDate = new Date(a.appointment_date);
+      const apptDate = new Date(a.appointment_date.split('T')[0] + 'T12:00:00'); // Usar mediodía
       return apptDate >= monthStart && apptDate <= referenceDate;
     });
     
