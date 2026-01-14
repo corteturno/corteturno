@@ -81,12 +81,12 @@ router.get('/available-times', async (req, res) => {
     
     // Check if it's a work day
     const requestDate = new Date(date + 'T12:00:00'); // Use noon to avoid timezone issues
-    const dayOfWeek = requestDate.toLocaleDateString('es-ES', { weekday: 'long' });
-    const dayName = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1);
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const dayName = dayNames[requestDate.getDay()];
     
-    console.log('Date:', date, 'Day of week:', dayOfWeek, 'Day name:', dayName, 'Work days:', branch.work_days);
+    console.log('Date:', date, 'Day index:', requestDate.getDay(), 'Day name:', dayName, 'Work days:', branch.work_days);
     
-    if (!branch.work_days.includes(dayName)) {
+    if (!branch.work_days || !branch.work_days.includes(dayName)) {
       console.log('Not a work day, returning empty slots');
       return res.json([]);
     }
