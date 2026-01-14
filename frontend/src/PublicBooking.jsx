@@ -318,7 +318,7 @@ const PublicBooking = ({ branchId, chairId }) => {
                         <div className="flex justify-between items-start mb-3">
                           <div>
                             <p className="font-semibold text-gray-900">{service?.name}</p>
-                            <p className="text-sm text-gray-600">{format(new Date(appt.appointment_date + 'T00:00:00'), 'd MMM yyyy', { locale: es })}</p>
+                            <p className="text-sm text-gray-600">{format(new Date(appt.appointment_date + 'T12:00:00'), 'd MMM yyyy', { locale: es })}</p>
                             <p className="text-sm text-gray-600">{appt.appointment_time}</p>
                           </div>
                           <span className={`px-2 py-1 rounded-lg text-xs ${
@@ -472,7 +472,7 @@ const PublicBooking = ({ branchId, chairId }) => {
                 <div className="flex items-center gap-3 mb-2">
                   <Calendar className="w-5 h-5 text-blue-600" />
                   <span className="text-blue-600 font-semibold">
-                    {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, d MMMM yyyy', { locale: es })}
+                    {format(new Date(selectedDate + 'T12:00:00'), 'EEEE, d MMMM yyyy', { locale: es })}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -529,7 +529,7 @@ const PublicBooking = ({ branchId, chairId }) => {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">¡Cita agendada!</h3>
             <p className="text-gray-600 mb-6">
-              Tu cita ha sido confirmada para el {format(new Date(selectedDate + 'T00:00:00'), 'd MMMM yyyy', { locale: es })} a las {selectedTime}
+              Tu cita ha sido confirmada para el {format(new Date(selectedDate + 'T12:00:00'), 'd MMMM yyyy', { locale: es })} a las {selectedTime}
             </p>
             <p className="text-sm text-gray-500">
               Recibirás una confirmación y podrás gestionar tu cita desde este enlace.

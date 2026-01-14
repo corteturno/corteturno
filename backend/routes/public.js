@@ -79,12 +79,15 @@ router.get('/available-times', async (req, res) => {
 
     const branch = branchResult.rows[0];
     
-    // Check if it's a work day
-    const requestDate = new Date(date + 'T12:00:00'); // Use noon to avoid timezone issues
-    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const dayName = dayNames[requestDate.getDay()];
+    // Check if it's a work day (using Mexico timezone)
+    const mexicoDate = new Date(date + 'T12:00:00');
+    // Adjust for Mexico timezone (UTC-6)
+    mexicoDate.setHours(mexicoDate.getHours() - 6);
     
-    console.log('Date:', date, 'Day index:', requestDate.getDay(), 'Day name:', dayName, 'Work days:', branch.work_days);
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const dayName = dayNames[mexicoDate.getDay()];
+    
+    console.log('Date:', date, 'Mexico date:', mexicoDate, 'Day index:', mexicoDate.getDay(), 'Day name:', dayName, 'Work days:', branch.work_days);
     
     if (!branch.work_days || !branch.work_days.includes(dayName)) {
       console.log('Not a work day, returning empty slots');
@@ -127,25 +130,26 @@ router.get('/available-times', async (req, res) => {
     const lunchStartMinutes = lunchStart ? lunchStartHour * 60 + lunchStartMin : null;
     const lunchEndMinutes = lunchEnd ? lunchEndHour * 60 + lunchEndMin : null;
 
-    // Get current time if date is today (using local timezone)
-    const today = new Date();
-    const todayStr = today.getFullYear() + '-' + 
-                    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                    String(today.getDate()).padStart(2, '0');
+    // Get current time if date is today (using Mexico timezone UTC-6)
+    const mexicoTime = new Date(new Date().getTime() + (-6 * 60 * 60 * 1000)); // UTC-6 for Mexico
+    const todayStr = mexicoTime.getFullYear() + '-' + 
+                    String(mexicoTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(mexicoTime.getDate()).padStart(2, '0');
     const isToday = date === todayStr;
     
     console.log('Date comparison:', {
       requestedDate: date,
       todayStr: todayStr,
       isToday: isToday,
-      todayObject: today
+      mexicoTime: mexicoTime,
+      serverTime: new Date()
     });
     
     let minTimeMinutes = currentTime;
     
     if (isToday) {
-      const currentHour = today.getHours();
-      const currentMinute = today.getMinutes();
+      const currentHour = mexicoTime.getHours();
+      const currentMinute = mexicoTime.getMinutes();
       const nowMinutes = currentHour * 60 + currentMinute;
       
       // Add 30 minutes buffer for next available slot
