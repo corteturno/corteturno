@@ -41,6 +41,8 @@ const PublicBooking = ({ branchId, chairId }) => {
   });
   const [clientPhone, setClientPhone] = useState('');
   const [clientAppointments, setClientAppointments] = useState([]);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [appointmentForCalendar, setAppointmentForCalendar] = useState(null);
 
   useEffect(() => {
     loadInitialData();
@@ -64,33 +66,51 @@ const PublicBooking = ({ branchId, chairId }) => {
     }
   };
 
-  // Show appointment confirmation notification
-  const showAppointmentConfirmation = (appointmentData) => {
-    if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
-      const service = services.find(s => s.id === appointmentData.serviceId);
-      const appointmentDate = format(new Date(appointmentData.date + 'T00:00:00'), 'd MMMM yyyy', { locale: es });
-      
-      navigator.serviceWorker.ready.then(registration => {
-        registration.showNotification('✅ Cita Confirmada', {
-          body: `Tu turno para ${service?.name} es el ${appointmentDate} a las ${appointmentData.time}. Recordatorio automático antes de tu turno.`,
-          icon: '/icon-192.png',
-          badge: '/icon-192.png',
-          vibrate: [200, 100, 200],
-          requireInteraction: true,
-          tag: 'appointment-confirmation'
-        });
-        
-        // Schedule reminder notification
-        navigator.serviceWorker.controller?.postMessage({
-          type: 'SCHEDULE_REMINDER',
-          appointmentData: {
-            serviceName: service?.name,
-            date: appointmentData.date,
-            time: appointmentData.time
-          }
-        });
-      });
-    }
+  // Detect if user is on mobile device
+  const isMobileDevice = () => {
+    return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  // Generate ICS file for calendar
+  const generateICSFile = (appointmentData) => {
+    const service = services.find(s => s.id === appointmentData.serviceId);
+    const startDate = new Date(`${appointmentData.date}T${appointmentData.time}:00`);
+    const endDate = new Date(startDate.getTime() + (service?.duration || 30) * 60000);
+    
+    // Format dates for ICS (YYYYMMDDTHHMMSS)
+    const formatICSDate = (date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//CorteTurno//ES',
+      'BEGIN:VEVENT',
+      `UID:${Date.now()}@corteturno.com`,
+      `DTSTART:${formatICSDate(startDate)}`,
+      `DTEND:${formatICSDate(endDate)}`,
+      `SUMMARY:${service?.name || 'Cita'} - ${branchData.name}`,
+      `DESCRIPTION:Cita en ${branchData.name}, Silla ${chairData.chair_number}`,
+      `LOCATION:${branchData.name}`,
+      'BEGIN:VALARM',
+      'TRIGGER:-PT1H',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Recordatorio: Tu cita es en 1 hora',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+    
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `cita-${appointmentData.date}-${appointmentData.time}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -198,12 +218,15 @@ const PublicBooking = ({ branchId, chairId }) => {
         })
       });
       
-      // Show confirmation notification
-      showAppointmentConfirmation({
-        serviceId: bookingData.serviceId,
-        date: selectedDate,
-        time: selectedTime
-      });
+      // Check if mobile device and show calendar modal instead of notification
+      if (isMobileDevice()) {
+        setAppointmentForCalendar({
+          serviceId: bookingData.serviceId,
+          date: selectedDate,
+          time: selectedTime
+        });
+        setShowCalendarModal(true);
+      }
       
       setStep('success');
     } catch (err) {
@@ -523,18 +546,57 @@ const PublicBooking = ({ branchId, chairId }) => {
         )}
 
         {step === 'success' && (
-          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="w-8 h-8 text-green-600" />
+          <>
+            <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Check className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">¡Cita agendada!</h3>
+              <p className="text-gray-600 mb-6">
+                Tu cita ha sido confirmada para el {format(new Date(selectedDate + 'T12:00:00'), 'd MMMM yyyy', { locale: es })} a las {selectedTime}
+              </p>
+              <p className="text-sm text-gray-500">
+                Recibirás una confirmación y podrás gestionar tu cita desde este enlace.
+              </p>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">¡Cita agendada!</h3>
-            <p className="text-gray-600 mb-6">
-              Tu cita ha sido confirmada para el {format(new Date(selectedDate + 'T12:00:00'), 'd MMMM yyyy', { locale: es })} a las {selectedTime}
-            </p>
-            <p className="text-sm text-gray-500">
-              Recibirás una confirmación y podrás gestionar tu cita desde este enlace.
-            </p>
-          </div>
+            
+            {/* Calendar Modal for Mobile */}
+            {showCalendarModal && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl p-6 w-full max-w-sm mx-auto shadow-2xl">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Calendar className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      ¿Agregar al calendario?
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Descarga un recordatorio para tu cita. Se activará 1 hora antes de tu turno.
+                    </p>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowCalendarModal(false)}
+                      className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold text-sm active:bg-gray-200 transition-all"
+                    >
+                      No, gracias
+                    </button>
+                    <button
+                      onClick={() => {
+                        generateICSFile(appointmentForCalendar);
+                        setShowCalendarModal(false);
+                      }}
+                      className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold text-sm active:scale-[0.98] transition-all"
+                    >
+                      Sí, guardar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
