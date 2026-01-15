@@ -179,8 +179,10 @@ async function handleSubscriptionCancellation(subscription) {
 // Get subscription status
 router.get('/subscription-status', authenticate, async (req, res) => {
   try {
+    console.log('🔍 Checking subscription status for user:', req.user.id);
+    
     const users = await query(
-      'SELECT subscription_plan, subscription_expires_at FROM users WHERE id = $1',
+      'SELECT subscription_plan, subscription_expires_at, stripe_customer_id FROM users WHERE id = $1',
       [req.user.id]
     );
     
@@ -189,18 +191,48 @@ router.get('/subscription-status', authenticate, async (req, res) => {
     }
     
     const user = users.rows[0];
+    console.log('📊 User data from DB:', user);
+    
     const now = new Date();
     const expiresAt = user.subscription_expires_at ? new Date(user.subscription_expires_at) : new Date();
     const daysLeft = Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24));
     
-    res.json({
+    const result = {
       plan: user.subscription_plan || 'free',
       daysLeft: Math.max(0, daysLeft),
       expiresAt: user.subscription_expires_at
-    });
+    };
+    
+    console.log('📤 Sending subscription status:', result);
+    res.json(result);
   } catch (error) {
     console.error('Error getting subscription status:', error);
     res.status(500).json({ error: 'Error al obtener estado de suscripción' });
+  }
+});
+
+// Temporary endpoint to manually upgrade user (for testing)
+router.post('/manual-upgrade', authenticate, async (req, res) => {
+  try {
+    console.log('🔧 Manual upgrade for user:', req.user.id);
+    
+    const expirationDate = new Date();
+    expirationDate.setMonth(expirationDate.getMonth() + 1);
+    
+    const result = await query(
+      'UPDATE users SET subscription_plan = $1, subscription_expires_at = $2 WHERE id = $3 RETURNING *',
+      ['pro', expirationDate, req.user.id]
+    );
+    
+    if (result.rows.length > 0) {
+      console.log('✅ Manual upgrade successful:', result.rows[0]);
+      res.json({ success: true, user: result.rows[0] });
+    } else {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error in manual upgrade:', error);
+    res.status(500).json({ error: 'Error al actualizar usuario' });
   }
 });
 

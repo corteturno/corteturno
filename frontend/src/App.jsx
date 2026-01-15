@@ -2986,6 +2986,23 @@ const BarberShopSaaS = () => {
             >
               {subscriptionStatus.plan === 'pro' ? `PRO ${subscriptionStatus.daysLeft}d` : 'FREE'}
             </button>
+            {/* Temporary test button */}
+            {subscriptionStatus.plan === 'free' && (
+              <button
+                onClick={async () => {
+                  try {
+                    await API.call('/stripe/manual-upgrade', { method: 'POST' });
+                    await checkSubscriptionStatus();
+                    alert('Actualizado a PRO');
+                  } catch (err) {
+                    alert('Error: ' + err.message);
+                  }
+                }}
+                className="px-2 py-1 bg-green-500 text-white text-xs rounded"
+              >
+                Test
+              </button>
+            )}
             <button 
               onClick={handleLogout} 
               className="p-2 active:bg-gray-100 rounded-xl"
