@@ -53,46 +53,59 @@ const PublicBooking = ({ branchId, chairId }) => {
     return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
 
-  // Generate ICS file for calendar
+  // Generate ICS file for calendar (WebView compatible)
   const generateICSFile = (appointmentData) => {
-    const service = services.find(s => s.id === appointmentData.serviceId);
-    const startDate = new Date(`${appointmentData.date}T${appointmentData.time}:00`);
-    const endDate = new Date(startDate.getTime() + (service?.duration || 30) * 60000);
-    
-    // Format dates for ICS (YYYYMMDDTHHMMSS)
-    const formatICSDate = (date) => {
-      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    };
-    
-    const icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//CorteTurno//ES',
-      'BEGIN:VEVENT',
-      `UID:${Date.now()}@corteturno.com`,
-      `DTSTART:${formatICSDate(startDate)}`,
-      `DTEND:${formatICSDate(endDate)}`,
-      `SUMMARY:${service?.name || 'Cita'} - ${branchData.name}`,
-      `DESCRIPTION:Cita en ${branchData.name}, Silla ${chairData.chair_number}`,
-      `LOCATION:${branchData.name}`,
-      'BEGIN:VALARM',
-      'TRIGGER:-PT1H',
-      'ACTION:DISPLAY',
-      'DESCRIPTION:Recordatorio: Tu cita es en 1 hora',
-      'END:VALARM',
-      'END:VEVENT',
-      'END:VCALENDAR'
-    ].join('\r\n');
-    
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `cita-${appointmentData.date}-${appointmentData.time}.ics`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const service = services.find(s => s.id === appointmentData.serviceId);
+      const startDate = new Date(`${appointmentData.date}T${appointmentData.time}:00`);
+      const endDate = new Date(startDate.getTime() + (service?.duration || 30) * 60000);
+      
+      // Format dates for ICS (YYYYMMDDTHHMMSS)
+      const formatICSDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+      
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//CorteTurno//ES',
+        'BEGIN:VEVENT',
+        `UID:${Date.now()}@corteturno.com`,
+        `DTSTART:${formatICSDate(startDate)}`,
+        `DTEND:${formatICSDate(endDate)}`,
+        `SUMMARY:${service?.name || 'Cita'} - ${branchData.name}`,
+        `DESCRIPTION:Cita en ${branchData.name}, Silla ${chairData.chair_number}`,
+        `LOCATION:${branchData.name}`,
+        'BEGIN:VALARM',
+        'TRIGGER:-PT1H',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Recordatorio: Tu cita es en 1 hora',
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+      
+      // Use data URL for WebView compatibility
+      const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
+      
+      // Try to open in new window/tab (works better in WebViews)
+      const newWindow = window.open(dataUrl, '_blank');
+      
+      // If that fails, try direct navigation
+      if (!newWindow) {
+        window.location.href = dataUrl;
+      }
+      
+      // Close modal after attempting download
+      setTimeout(() => {
+        setShowCalendarModal(false);
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error generating calendar file:', error);
+      // Close modal even if there's an error
+      setShowCalendarModal(false);
+    }
   };
 
   useEffect(() => {
