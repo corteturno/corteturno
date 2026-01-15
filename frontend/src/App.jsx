@@ -2991,9 +2991,9 @@ const BarberShopSaaS = () => {
               <button
                 onClick={async () => {
                   try {
-                    await API.call('/stripe/manual-upgrade', { method: 'POST' });
+                    await API.call('/stripe/simulate-webhook', { method: 'POST' });
                     await checkSubscriptionStatus();
-                    alert('Actualizado a PRO');
+                    alert('Webhook simulado - actualizado a PRO');
                   } catch (err) {
                     alert('Error: ' + err.message);
                   }

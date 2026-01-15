@@ -52,6 +52,8 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
 
 // Webhook to handle successful payments
 router.post('/webhook', async (req, res) => {
+  console.log('🔔 Webhook received from Stripe');
+  
   const sig = req.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -59,9 +61,13 @@ router.post('/webhook', async (req, res) => {
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-    console.log('Webhook event received:', event.type);
+    console.log('✅ Webhook signature verified');
+    console.log('📦 Webhook event received:', event.type);
   } catch (err) {
-    console.log(`Webhook signature verification failed:`, err.message);
+    console.log(`❌ Webhook signature verification failed:`, err.message);
+    console.log('Headers:', req.headers);
+    console.log('Body type:', typeof req.body);
+    console.log('Body length:', req.body?.length);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -69,21 +75,21 @@ router.post('/webhook', async (req, res) => {
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object;
-      console.log('Checkout session completed:', session.id);
+      console.log('💳 Checkout session completed:', session.id);
       await handleSuccessfulPayment(session);
       break;
     case 'invoice.payment_succeeded':
       const invoice = event.data.object;
-      console.log('Invoice payment succeeded:', invoice.id);
+      console.log('💾 Invoice payment succeeded:', invoice.id);
       await handleSubscriptionRenewal(invoice);
       break;
     case 'customer.subscription.deleted':
       const subscription = event.data.object;
-      console.log('Subscription deleted:', subscription.id);
+      console.log('🚫 Subscription deleted:', subscription.id);
       await handleSubscriptionCancellation(subscription);
       break;
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      console.log(`🤷 Unhandled event type ${event.type}`);
   }
 
   res.json({received: true});
@@ -211,28 +217,26 @@ router.get('/subscription-status', authenticate, async (req, res) => {
   }
 });
 
-// Temporary endpoint to manually upgrade user (for testing)
-router.post('/manual-upgrade', authenticate, async (req, res) => {
+// Temporary endpoint to simulate webhook (for testing)
+router.post('/simulate-webhook', authenticate, async (req, res) => {
   try {
-    console.log('🔧 Manual upgrade for user:', req.user.id);
+    console.log('🧪 Simulating webhook for user:', req.user.id);
     
-    const expirationDate = new Date();
-    expirationDate.setMonth(expirationDate.getMonth() + 1);
+    // Simulate a successful payment session
+    const mockSession = {
+      client_reference_id: req.user.id,
+      customer: 'cus_test_' + Date.now(),
+      metadata: {
+        tenant_id: req.user.tenant_id
+      }
+    };
     
-    const result = await query(
-      'UPDATE users SET subscription_plan = $1, subscription_expires_at = $2 WHERE id = $3 RETURNING *',
-      ['pro', expirationDate, req.user.id]
-    );
+    await handleSuccessfulPayment(mockSession);
     
-    if (result.rows.length > 0) {
-      console.log('✅ Manual upgrade successful:', result.rows[0]);
-      res.json({ success: true, user: result.rows[0] });
-    } else {
-      res.status(404).json({ error: 'Usuario no encontrado' });
-    }
+    res.json({ success: true, message: 'Webhook simulado exitosamente' });
   } catch (error) {
-    console.error('Error in manual upgrade:', error);
-    res.status(500).json({ error: 'Error al actualizar usuario' });
+    console.error('Error simulating webhook:', error);
+    res.status(500).json({ error: 'Error al simular webhook' });
   }
 });
 
