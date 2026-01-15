@@ -3067,7 +3067,7 @@ const BarberShopSaaS = () => {
             </button>
 
             {/* GRID DE MÉTRICAS (SUB-TARJETAS) */}
-            <div className={`grid ${onboardingData.commissionsEnabled ? 'grid-cols-2' : 'grid-cols-3'} gap-3 mb-6`}>
+            <div className={`grid ${selectedBranchData?.commissions_enabled ? 'grid-cols-2' : 'grid-cols-3'} gap-3 mb-6`}>
               <button
                 onClick={() => {
                   setMetricsModalType('completed');
@@ -3098,7 +3098,7 @@ const BarberShopSaaS = () => {
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Ingresos</span>
                 <p className="text-[20px] font-black text-black font-mono">${currentMetrics.revenue || 0}</p>
               </button>
-              {onboardingData.commissionsEnabled && (
+              {selectedBranchData?.commissions_enabled && (
                 <button
                   onClick={() => setShowCommissionModal(true)}
                   className="bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center active:scale-[0.98] transition-all"
@@ -3110,7 +3110,7 @@ const BarberShopSaaS = () => {
             </div>
 
             {/* RANKING MENSUAL */}
-            {onboardingData.commissionsEnabled && (
+            {selectedBranchData?.commissions_enabled && (
               <button
                 onClick={() => setShowRankingModal(true)}
                 className="group relative w-full bg-gradient-to-b from-white to-[#fbfbfd] rounded-[22px] p-[1px] mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] active:scale-[0.96] transition-all duration-300"
