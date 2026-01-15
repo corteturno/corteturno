@@ -46,25 +46,7 @@ const PublicBooking = ({ branchId, chairId }) => {
 
   useEffect(() => {
     loadInitialData();
-    registerServiceWorker();
   }, [branchId, chairId]);
-
-  // Register service worker for push notifications
-  const registerServiceWorker = async () => {
-    if ('serviceWorker' in navigator && 'PushManager' in window) {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js');
-        console.log('Service Worker registered:', registration);
-        
-        // Request notification permission
-        if (Notification.permission === 'default') {
-          await Notification.requestPermission();
-        }
-      } catch (error) {
-        console.error('Service Worker registration failed:', error);
-      }
-    }
-  };
 
   // Detect if user is on mobile device
   const isMobileDevice = () => {
@@ -204,6 +186,8 @@ const PublicBooking = ({ branchId, chairId }) => {
     }
 
     setLoading(true);
+    setError(''); // Clear any previous errors
+    
     try {
       await PublicAPI.call('/public/book', {
         method: 'POST',
@@ -218,7 +202,7 @@ const PublicBooking = ({ branchId, chairId }) => {
         })
       });
       
-      // Check if mobile device and show calendar modal instead of notification
+      // Always show calendar modal on mobile devices
       if (isMobileDevice()) {
         setAppointmentForCalendar({
           serviceId: bookingData.serviceId,
