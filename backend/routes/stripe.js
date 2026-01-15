@@ -95,20 +95,30 @@ async function handleSuccessfulPayment(session) {
     const userId = session.client_reference_id; // No usar parseInt, es un UUID
     const tenantId = session.metadata.tenant_id;
     
-    console.log('Processing payment for user:', userId);
+    console.log('=== PROCESSING SUCCESSFUL PAYMENT ===');
+    console.log('User ID:', userId);
+    console.log('Tenant ID:', tenantId);
+    console.log('Customer ID:', session.customer);
     
     // Update user subscription
     const expirationDate = new Date();
     expirationDate.setMonth(expirationDate.getMonth() + 1);
     
-    await query(
-      'UPDATE users SET subscription_plan = $1, subscription_expires_at = $2, stripe_customer_id = $3 WHERE id = $4',
+    console.log('Updating user subscription to PRO until:', expirationDate);
+    
+    const result = await query(
+      'UPDATE users SET subscription_plan = $1, subscription_expires_at = $2, stripe_customer_id = $3 WHERE id = $4 RETURNING *',
       ['pro', expirationDate, session.customer, userId]
     );
     
-    console.log(`User ${userId} upgraded to PRO plan until ${expirationDate}`);
+    if (result.rows.length > 0) {
+      console.log('✅ User successfully upgraded to PRO:', result.rows[0]);
+    } else {
+      console.log('❌ No user found with ID:', userId);
+    }
+    
   } catch (error) {
-    console.error('Error handling successful payment:', error);
+    console.error('❌ Error handling successful payment:', error);
   }
 }
 

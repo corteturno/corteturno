@@ -133,7 +133,10 @@ const BarberShopSaaS = () => {
     const payment = urlParams.get('payment');
     if (payment === 'success') {
       setShowSuccessModal(true);
-      checkSubscriptionStatus();
+      // Force refresh subscription status multiple times
+      setTimeout(() => checkSubscriptionStatus(), 1000);
+      setTimeout(() => checkSubscriptionStatus(), 3000);
+      setTimeout(() => checkSubscriptionStatus(), 5000);
       // Clean URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -3713,7 +3716,10 @@ const BarberShopSaaS = () => {
             <button
               onClick={() => {
                 setShowSuccessModal(false);
+                // Force multiple subscription status checks
                 checkSubscriptionStatus();
+                setTimeout(() => checkSubscriptionStatus(), 2000);
+                setTimeout(() => checkSubscriptionStatus(), 4000);
               }}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-xl font-semibold text-sm active:scale-[0.98] transition-all"
             >
